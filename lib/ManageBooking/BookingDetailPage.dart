@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class BookingDetailPage extends StatelessWidget {
   final Map<String, dynamic> booking;

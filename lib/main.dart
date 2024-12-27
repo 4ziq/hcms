@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'ManageBooking/BookingListPage.dart';
 
 void main() {
@@ -6,12 +7,17 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return MaterialApp(
       title: 'HCMS',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
+        bodyMedium: GoogleFonts.oswald(textStyle: textTheme.bodyMedium),
+        ),
       ),
       home: DashboardScreen(), // Set DashboardScreen as the home screen
     );
@@ -24,7 +30,35 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Center(
-          child: Text("HCMS"),
+          // child: Text(
+          //   "HCMS",
+          //   style: TextStyle(
+          //     fontSize: 20,
+          //     color: Colors.black,
+          //     fontWeight: FontWeight.bold,
+          //   ),
+          // ),
+          child: Column(
+            children: <Widget>[
+              Text(
+                "Homestay Cleaner Management System",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                  height: 2.5,
+                ),
+              ),
+              Text(
+                "HCMS",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: Center(
@@ -61,12 +95,19 @@ class DashboardScreen extends StatelessWidget {
                 // Add more navigation options if needed
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
               ),
               child: const Text(
                 'Other Feature (Placeholder)',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 20),
