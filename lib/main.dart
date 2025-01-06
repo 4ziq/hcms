@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'ManageBooking/BookingListPage.dart';
+import 'pages/ManageBooking/BookingListPage.dart';
 
-void main() {
+void main() { 
   runApp(MyApp());
 }
 
