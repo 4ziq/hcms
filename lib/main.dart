@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
+import 'ManageCleanerActivity/CleanerActivityListPage.dart'; // Import CleanerActivityListPage
 
 void main() { 
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
-        bodyMedium: GoogleFonts.oswald(textStyle: textTheme.bodyMedium),
+          bodyMedium: GoogleFonts.oswald(textStyle: textTheme.bodyMedium),
         ),
       ),
       home: DashboardScreen(), // Set DashboardScreen as the home screen
@@ -30,14 +30,6 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Center(
-          // child: Text(
-          //   "HCMS",
-          //   style: TextStyle(
-          //     fontSize: 20,
-          //     color: Colors.black,
-          //     fontWeight: FontWeight.bold,
-          //   ),
-          // ),
           child: Column(
             children: <Widget>[
               Text(
@@ -92,7 +84,32 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Add more navigation options if needed
+                // Navigate to Manage Cleaner Activity
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CleanerActivityListPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: const Text(
+                'Manage Cleaner Activity',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Placeholder for other features
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
@@ -110,7 +127,6 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
