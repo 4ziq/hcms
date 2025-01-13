@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore package
 import 'CleaningScheduleDetailsPage.dart'; // Import JobDetailPage
-import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
+// import 'package:table_calendar/table_calendar.dart';
+// import 'package:intl/intl.dart';
 
 class CleaningScheduleListPage extends StatelessWidget {
   const CleaningScheduleListPage({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class CleaningScheduleListPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCalendar(),
+            // _buildCalendar(),
             _buildCalendarSection(),
             const SizedBox(height: 20),
             _buildDailyEarnings(),
@@ -31,21 +31,21 @@ class CleaningScheduleListPage extends StatelessWidget {
   }
 
   // Weekly calendar widget
-  Widget _buildCalendar() {
-    return TableCalendar(
-      firstDay: DateTime.utc(2024, 1, 1),
-      lastDay: DateTime.utc(2024, 12, 31),
-      focusedDay: _selectedDate,
-      calendarFormat: CalendarFormat.week, // Show only one week
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
-      onDaySelected: (selectedDay, focusedDay) {
-        setState(() {
-          _selectedDate = selectedDay;
-        });
-      },
-    );
-  }
+  // Widget _buildCalendar() {
+  //   return TableCalendar(
+  //     firstDay: DateTime.utc(2024, 1, 1),
+  //     lastDay: DateTime.utc(2024, 12, 31),
+  //     focusedDay: _selectedDate,
+  //     calendarFormat: CalendarFormat.week, // Show only one week
+  //     startingDayOfWeek: StartingDayOfWeek.monday,
+  //     selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
+  //     onDaySelected: (selectedDay, focusedDay) {
+  //       setState(() {
+  //         _selectedDate = selectedDay;
+  //       });
+  //     },
+  //   );
+  // }
 
   Widget _buildCalendarSection() {
     return Container(

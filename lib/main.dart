@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:hcms/firebase_options.dart';
 import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
 import 'ManageCleanerActivity/CleanerActivityListPage.dart'; // Import CleanerActivityListPage
 
-void main() { 
+void main() async { 
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //runApp(const MyApp());
   runApp(MyApp());
 }
 
@@ -99,7 +104,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'Cleaning Schedule',
+                'Cleaning Activity',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
@@ -124,7 +129,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'Other Feature (Placeholder)',
+                'Cleaner Schedule',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
