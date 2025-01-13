@@ -5,14 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/firebase_options.dart';
 import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
-import 'pages/ManageCleanerActivity/CleanerActivityListPage.dart'; // Import CleanerActivityListPage
+import 'pages/ManageCleanerActivity/CleanerActivityListPage.dart';
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  //runApp(const MyApp());
   runApp(MyApp());
 }
 
@@ -21,16 +20,22 @@ final FirebaseFirestore firestore = FirebaseFirestore.instance;
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return MaterialApp(
-      title: 'HCMS',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
-          bodyMedium: GoogleFonts.oswald(textStyle: textTheme.bodyMedium),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CleanerActivityController()),
+      ],
+      child: MaterialApp(
+        title: 'HCMS',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          textTheme:
+              GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
+            bodyMedium: GoogleFonts.oswald(
+                textStyle: Theme.of(context).textTheme.bodyMedium),
+          ),
         ),
+        home: DashboardScreen(),
       ),
-      home: DashboardScreen(), // Set DashboardScreen as the home screen
     );
   }
 }
@@ -70,7 +75,6 @@ class DashboardScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                // Navigate to BookingListScreen
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => BookingListPage()),
@@ -96,7 +100,6 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to Manage Cleaner Activity
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -123,7 +126,6 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to Manage Cleaning Schedule
                 Navigator.push(
                   context,
                   MaterialPageRoute(
