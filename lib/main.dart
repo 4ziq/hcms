@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/firebase_options.dart';
 import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
-import 'ManageCleanerActivity/CleanerActivityListPage.dart'; // Import CleanerActivityListPage
+import 'pages/ManageCleanerActivity/CleanerActivityListPage.dart'; // Import CleanerActivityListPage
+import 'package:provider/provider.dart';
+import 'package:hcms/provider/CleanerActivityController.dart';
 
-void main() async { 
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //runApp(const MyApp());
   runApp(MyApp());
 }
+
+final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 class MyApp extends StatelessWidget {
   @override
@@ -73,7 +78,8 @@ class DashboardScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
-                padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -93,12 +99,14 @@ class DashboardScreen extends StatelessWidget {
                 // Navigate to Manage Cleaner Activity
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CleanerActivityListPage()),
+                  MaterialPageRoute(
+                      builder: (context) => CleanerActivityListPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
-                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -118,12 +126,14 @@ class DashboardScreen extends StatelessWidget {
                 // Navigate to Manage Cleaning Schedule
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CleaningScheduleListPage()),
+                  MaterialPageRoute(
+                      builder: (context) => CleaningScheduleListPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -144,7 +154,8 @@ class DashboardScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
