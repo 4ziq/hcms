@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
 import 'ManageCleanerActivity/CleanerActivityListPage.dart'; // Import CleanerActivityListPage
 
@@ -98,7 +99,32 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'Manage Cleaner Activity',
+                'Cleaning Schedule',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to Manage Cleaning Schedule
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CleaningScheduleListPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: const Text(
+                'Other Feature (Placeholder)',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
