@@ -8,6 +8,7 @@ import 'pages/ManageBooking/BookingListPage.dart';
 import 'pages/ManageCleanerActivity/CleanerActivityListPage.dart';
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
+import 'pages/Report/ReportPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -142,6 +143,31 @@ class DashboardScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Cleaner Schedule',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ReportPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: const Text(
+                'Reports',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,

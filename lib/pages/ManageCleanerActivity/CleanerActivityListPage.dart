@@ -1,117 +1,102 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:hcms/provider/CleanerActivityController.dart';
-import 'TaskDetailPage.dart';
+import 'TaskDetailPage.dart'; // Adjust the path if necessary
 
 class CleanerActivityListPage extends StatelessWidget {
+  final List<Map<String, String>> tasks = [
+    {
+      "date": "14/09/2024",
+      "time": "1:00 PM - 3:00 PM",
+      "homestay": "TERATAK BONDA",
+      "description":
+          "Basic cleaning such as sweeping floors, making the bed, cleaning the house...",
+      "payment": "RM 20"
+    },
+    {
+      "date": "18/09/2024",
+      "time": "1:00 PM - 3:00 PM",
+      "homestay": "TAMAN MALURI HOMESTAY",
+      "description":
+          "Basic cleaning such as sweeping floors, making the bed, cleaning the house...",
+      "payment": "RM 20"
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final cleanerActivityController =
-        Provider.of<CleanerActivityController>(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update Activity'),
-        centerTitle: true,
+        title: Text('Update Activity'),
+        backgroundColor: Colors.blue,
       ),
-      body: cleanerActivityController.tasks.isEmpty
-          ? const Center(
-              child: Text('No Activities Found'),
-            )
-          : ListView.builder(
-              itemCount: cleanerActivityController.tasks.length,
-              itemBuilder: (context, index) {
-                final activity = cleanerActivityController.tasks[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.blueAccent),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${activity['date']}   ${activity['time']}",
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.black),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            activity['homestay'],
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            activity['description'],
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.black87),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Total Payment: ${activity['payment']}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          TaskDetailPage(activity: activity),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text(
-                                  "Update Activity",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+      body: ListView.builder(
+        padding: EdgeInsets.all(10.0),
+        itemCount: tasks.length,
+        itemBuilder: (context, index) {
+          final task = tasks[index];
+          return Card(
+            color: Colors.white, // Set the card's background color to white
+            elevation: 4.0,
+            margin: EdgeInsets.symmetric(vertical: 8.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          cleanerActivityController.addTask({
-            "date": "20/01/2025",
-            "time": "1:00 PM - 3:00 PM",
-            "homestay": "NEW HOMESTAY",
-            "description": "Added via Provider.",
-            "payment": "RM 30",
-          });
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${task["date"]}   ${task["time"]}',
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    task["homestay"] ?? "",
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    task["description"] ?? "",
+                    style: TextStyle(fontSize: 14.0),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total Payment: ${task["payment"]}',
+                        style: TextStyle(
+                            fontSize: 14.0, fontWeight: FontWeight.bold),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TaskDetailPage(task: task),
+                            ),
+                          );
+                        },
+                        child: Text('Update Activity'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.blue, // Button background color
+                          textStyle: TextStyle(fontSize: 14.0),
+                          foregroundColor: Colors.white,
+                          iconColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
         },
-        child: const Icon(Icons.add),
       ),
     );
   }

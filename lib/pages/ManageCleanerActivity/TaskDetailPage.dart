@@ -1,29 +1,27 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-
 class TaskDetailPage extends StatefulWidget {
-  final Map<String, dynamic> activity;
+  final Map<String, String> task;
 
-  TaskDetailPage({required this.activity});
+  TaskDetailPage({required this.task});
 
   @override
   _TaskDetailPageState createState() => _TaskDetailPageState();
 }
 
 class _TaskDetailPageState extends State<TaskDetailPage> {
-  List<XFile?> images = [null, null, null, null]; // For storing selected images
+  final List<File?> _images = [null, null, null, null];
+  final ImagePicker _picker = ImagePicker();
 
-  Future<void> pickImage(int index) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
+  Future<void> _pickImage(int index) async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        images[index] = image; // Save the selected image in the specific slot
+        _images[index] = File(image.path);
       });
-      print('Image uploaded: ${image.path}');
     }
   }
 
@@ -31,135 +29,82 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update Activity'),
-        centerTitle: true,
+        title: Text('Update Activity'),
+        backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Homestay Name Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  widget.activity['homestay'] ?? 'Homestay Name',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              Text(
+                widget.task["homestay"] ?? "",
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
-
-              // Photo Grid
+              SizedBox(height: 16.0),
               GridView.builder(
                 shrinkWrap: true,
-                physics:
-                    const NeverScrollableScrollPhysics(), // Disable internal scrolling
-                itemCount: 4,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1, // Shrinks the grid items
+                  mainAxisSpacing: 10.0,
+                  crossAxisSpacing: 10.0,
                 ),
+                itemCount: 4,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                    onTap: () => pickImage(index), // Handle photo upload
+                    onTap: () => _pickImage(index),
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: images[index] == null
+                      child: _images[index] == null
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 Icon(Icons.camera_alt,
-                                    size: 30,
-                                    color: Colors.grey), // Smaller icon
-                                SizedBox(height: 8),
-                                Text(
-                                  'Photo',
-                                  style: TextStyle(
-                                    fontSize: 14, // Smaller text
-                                    color: Colors.grey,
-                                  ),
-                                ),
+                                    size: 40.0, color: Colors.grey),
+                                SizedBox(height: 8.0),
+                                Text('Photo'),
                               ],
                             )
-                          : Image.file(
-                              File(images[index]!.path),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            ),
+                          : kIsWeb
+                              ? Image.network(
+                                  'https://via.placeholder.com/150', // Placeholder for web
+                                  fit: BoxFit.cover,
+                                )
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.file(
+                                    _images[index]!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                     ),
                   );
                 },
               ),
-              const SizedBox(height: 20),
-
-              // Additional Notes
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Additional Notes",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
+              SizedBox(height: 20.0),
               TextField(
-                maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'Value',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  labelText: 'Additional Notes',
+                  border: OutlineInputBorder(),
                 ),
+                maxLines: 4,
               ),
-              const SizedBox(height: 20),
-
-              // Submit Button
-              Center(
+              SizedBox(height: 20.0),
+              Align(
+                alignment: Alignment.center,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Handle submission
-                    print(
-                        "Submitted task update for ${widget.activity['homestay']}");
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Update Successful')),
+                      SnackBar(content: Text('Update Successful')),
                     );
-                    Navigator.pop(context); // Navigate back
+                    Navigator.pop(context);
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Submit',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text('Submit'),
                 ),
               ),
             ],
