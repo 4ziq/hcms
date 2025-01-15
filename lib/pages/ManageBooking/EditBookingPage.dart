@@ -10,7 +10,6 @@ class EditBookingPage extends StatefulWidget {
 }
 
 class _EditBookingPageState extends State<EditBookingPage> {
-
   late TextEditingController _dateController;
   late TextEditingController _startTimeController;
   late TextEditingController _endTimeController;
@@ -21,10 +20,12 @@ class _EditBookingPageState extends State<EditBookingPage> {
   void initState() {
     super.initState();
     _dateController = TextEditingController(text: widget.booking['date']);
-    _startTimeController = TextEditingController(text: widget.booking['startTime']);
+    _startTimeController =
+        TextEditingController(text: widget.booking['startTime']);
     _endTimeController = TextEditingController(text: widget.booking['endTime']);
     _addressController = TextEditingController(text: widget.booking['address']);
-    _descriptionController = TextEditingController(text: widget.booking['description']);
+    _descriptionController =
+        TextEditingController(text: widget.booking['description']);
   }
 
   @override
@@ -44,7 +45,7 @@ class _EditBookingPageState extends State<EditBookingPage> {
     );
     Navigator.pop(context); // Return to the previous screen
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +82,8 @@ class _EditBookingPageState extends State<EditBookingPage> {
               ),
               TextField(
                 controller: _addressController,
-                decoration: const InputDecoration(labelText: 'Homestay Address'),
+                decoration:
+                    const InputDecoration(labelText: 'Homestay Address'),
               ),
               TextField(
                 controller: _descriptionController,
