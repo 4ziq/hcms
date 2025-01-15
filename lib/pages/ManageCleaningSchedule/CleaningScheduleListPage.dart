@@ -5,7 +5,7 @@ import 'CleaningScheduleDetailsPage.dart'; // Import JobDetailPage
 // import 'package:intl/intl.dart';
 
 class CleaningScheduleListPage extends StatelessWidget {
-  const CleaningScheduleListPage({Key? key}) : super(key: key);
+  const CleaningScheduleListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
