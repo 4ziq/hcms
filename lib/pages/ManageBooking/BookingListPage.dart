@@ -12,7 +12,8 @@ class BookingListPage extends StatefulWidget {
 }
 
 class _BookingListPageState extends State<BookingListPage> {
-  List<Map<String, dynamic>> bookings = []; // Initially empty list for testing "No Booking Found"
+  List<Map<String, dynamic>> bookings =
+      []; // Initially empty list for testing "No Booking Found"
 
   void _deleteBooking(int index) {
     setState(() {
@@ -23,7 +24,8 @@ class _BookingListPageState extends State<BookingListPage> {
     );
   }
 
-  void showDeleteConfirmationDialog(BuildContext context, VoidCallback onConfirm) {
+  void showDeleteConfirmationDialog(
+      BuildContext context, VoidCallback onConfirm) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -42,7 +44,8 @@ class _BookingListPageState extends State<BookingListPage> {
                 Navigator.of(context).pop(); // Close the dialog
                 onConfirm(); // Perform the delete action
               },
-              child: const Text('Confirm', style: TextStyle(color: Colors.blue)),
+              child:
+                  const Text('Confirm', style: TextStyle(color: Colors.blue)),
             ),
           ],
         );
@@ -107,7 +110,8 @@ class _BookingListPageState extends State<BookingListPage> {
                 itemBuilder: (context, index) {
                   final booking = bookings[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -134,11 +138,13 @@ class _BookingListPageState extends State<BookingListPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => BookingDetailPage(booking: booking),
+                                      builder: (context) =>
+                                          BookingDetailPage(booking: booking),
                                     ),
                                   );
                                 },
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue),
                                 child: const Text('View'),
                               ),
                               const SizedBox(width: 8.0),
@@ -149,20 +155,24 @@ class _BookingListPageState extends State<BookingListPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => EditBookingPage(booking: booking),
+                                      builder: (context) =>
+                                          EditBookingPage(booking: booking),
                                     ),
                                   );
                                 },
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green),
                                 child: const Text('Update'),
                               ),
                               const SizedBox(width: 8.0),
                               IconButton(
                                 onPressed: () {
                                   // Show confirmation dialog before deleting
-                                  showDeleteConfirmationDialog(context, () => _deleteBooking(index));
+                                  showDeleteConfirmationDialog(
+                                      context, () => _deleteBooking(index));
                                 },
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                               ),
                             ],
                           ),
@@ -180,7 +190,7 @@ class _BookingListPageState extends State<BookingListPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const BookingFormPage(),
+                  builder: (context) => BookingFormPage(),
                 ),
               );
             },
