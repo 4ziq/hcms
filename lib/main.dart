@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
 import 'pages/Report/ReportPage.dart';
 
-void main() async {
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -89,8 +89,7 @@ class DashboardScreen extends StatelessWidget {
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+              
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -111,16 +110,14 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => CleanerActivityListPage()),
-                  MaterialPageRoute(
-                      builder: (context) => CleanerActivityListPage()),
+
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -141,16 +138,14 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => CleaningScheduleListPage()),
-                  MaterialPageRoute(
-                      builder: (context) => CleaningScheduleListPage()),
+            
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
