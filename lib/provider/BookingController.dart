@@ -67,4 +67,14 @@ class BookingController {
             isEqualTo: _firestore.collection('bookings').doc(bookingId))
         .snapshots();
   }
+
+  double calculateRate(
+      DateTime startTime, DateTime endTime, double ratePerHour) {
+    // Calculate the difference in hours
+    final duration = endTime.difference(startTime);
+    final hours = duration.inMinutes / 60.0;
+
+    // Calculate the total cost
+    return hours * ratePerHour;
+  }
 }
