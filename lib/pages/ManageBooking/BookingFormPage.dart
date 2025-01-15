@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcms/domain/Booking.dart';
+import 'package:hcms/provider/BookingController.dart';
 
 class BookingFormPage extends StatefulWidget {
-  const BookingFormPage({super.key});
+  final String? bookingID;
+
+  BookingFormPage({super.key, this.bookingID});
 
   @override
   State<BookingFormPage> createState() => _BookingFormPageState();
+
+  final BookingController _bookingController = BookingController();
 }
- 
+
 class _BookingFormPageState extends State<BookingFormPage> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -17,7 +23,7 @@ class _BookingFormPageState extends State<BookingFormPage> {
 
   Future<void> _selectTime(BuildContext context, bool isStart) async {
     final TimeOfDay? picked = await showTimePicker(
-      context: context, 
+      context: context,
       initialTime: TimeOfDay.now(),
     );
     if (picked != null) {
@@ -33,11 +39,10 @@ class _BookingFormPageState extends State<BookingFormPage> {
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
-      context: context, 
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000), 
-      lastDate: DateTime(2100)
-    );
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100));
     if (picked != null) {
       setState(() {
         _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
@@ -53,6 +58,38 @@ class _BookingFormPageState extends State<BookingFormPage> {
     );
   }
 
+  void _submitForm() {
+    final String date = _dateController.text;
+    final String address = _addressController.text;
+    final String description = _descriptionController.text;
+
+    final booking = Booking(
+      BookingID: '', // Will be set by Firestore
+      BookingDate: DateTime.now(),
+      BookingStartTime: DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        _startTime!.hour,
+        _startTime!.minute,
+      ),
+      BookingEndTime: DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        _endTime!.hour,
+        _endTime!.minute,
+      ),
+      BookingHomeAddress: address,
+      BookingTaskDescription: description,
+      CalculatedRate: 10,
+      BookingStatus: 'Pending',
+      OwnerID: "owner_id", // Replace with actual owner ID
+    );
+
+    BookingController().createBooking(booking);
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -60,14 +97,6 @@ class _BookingFormPageState extends State<BookingFormPage> {
       data: _buildTheme(Brightness.light),
       child: Scaffold(
         appBar: AppBar(
-          // title: const Text(
-          //   "HCMS",
-          //   style: TextStyle(
-          //     fontSize: 18,
-          //     color: Colors.black,
-          //     fontWeight: FontWeight.bold,
-          //   ),
-          // ),
           title: Center(
             child: Row(
               children: [
@@ -123,7 +152,8 @@ class _BookingFormPageState extends State<BookingFormPage> {
                         children: [
                           const Text(
                             "Starts",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           GestureDetector(
@@ -155,7 +185,8 @@ class _BookingFormPageState extends State<BookingFormPage> {
                         children: [
                           const Text(
                             "Ends",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           GestureDetector(
@@ -218,7 +249,7 @@ class _BookingFormPageState extends State<BookingFormPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle submit logic here
+                      _submitForm();
                     },
                     child: const Text("Submit"),
                   ),

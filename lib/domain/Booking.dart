@@ -1,10 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Booking {
   final String BookingID;
   final DateTime BookingDate;
-  final TimeOfDay BookingStartTime;
-  final TimeOfDay BookingEndTime;
+  final DateTime BookingStartTime;
+  final DateTime BookingEndTime;
   final String BookingHomeAddress;
   final String BookingTaskDescription;
   final double CalculatedRate;
@@ -23,6 +24,22 @@ class Booking {
     required this.OwnerID,
   });
 
+  // Create a Booking from a Firebase snapshot
+  factory Booking.fromSnapshot(DocumentSnapshot snapshot) {
+    final data = snapshot.data() as Map<String, dynamic>;
+    return Booking(
+      BookingID: snapshot.id,
+      OwnerID: data['OwnerID'],
+      BookingDate: DateTime.parse(data['BookingDate']),
+      BookingStartTime: data['BookingStartTime'],
+      BookingEndTime: data['BookingEndTime'],
+      BookingHomeAddress: data['BookingHomeAddress'],
+      BookingTaskDescription: data['BookingTaskDescription'],
+      CalculatedRate: data['CalculatedRate'],
+      BookingStatus: data['BookingStatus'] ?? "Pending",
+    );
+  }
+
   // Convert Booking to a map for Firebase
   Map<String, dynamic> toMap() {
     return {
@@ -33,23 +50,8 @@ class Booking {
       'BookingEndTime': BookingEndTime,
       'BookingHomeAddress': BookingHomeAddress,
       'BookingTaskDescription': BookingTaskDescription,
-      'CalculatedRate' : CalculatedRate,
+      'CalculatedRate': CalculatedRate,
       'BookingStatus': BookingStatus,
     };
-  }
-
-  // Create a Booking from a Firebase snapshot
-  factory Booking.fromMap(Map<String, dynamic> map) {
-    return Booking(
-      BookingID: map['BookingID'],
-      OwnerID: map['OwnerID'],
-      BookingDate: DateTime.parse(map['BookingDate']),
-      BookingStartTime: map['BookingStartTime'],
-      BookingEndTime: map['BookingEndTime'],
-      BookingHomeAddress: map['BookingHomeAddress'],
-      BookingTaskDescription: map['BookingTaskDescription'],
-      CalculatedRate: map['CalculatedRate'],
-      BookingStatus: map['BookingStatus'] ?? "Pending",
-    );
   }
 }
