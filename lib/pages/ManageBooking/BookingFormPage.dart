@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hcms/domain/Booking.dart';
 import 'package:hcms/provider/BookingController.dart';
+import 'package:intl/intl.dart';
 
 class BookingFormPage extends StatefulWidget {
   final String? bookingID;
@@ -18,23 +19,17 @@ class _BookingFormPageState extends State<BookingFormPage> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
+  final TextEditingController _startTimeController = TextEditingController();
+  final TextEditingController _endTimeController = TextEditingController();
 
-  Future<void> _selectTime(BuildContext context, bool isStart) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          _startTime = picked;
-        } else {
-          _endTime = picked;
-        }
-      });
-    }
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _addressController.dispose();
+    _descriptionController.dispose();
+    _startTimeController.dispose();
+    _endTimeController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -45,7 +40,7 @@ class _BookingFormPageState extends State<BookingFormPage> {
         lastDate: DateTime(2100));
     if (picked != null) {
       setState(() {
-        _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
+        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
   }
@@ -61,28 +56,33 @@ class _BookingFormPageState extends State<BookingFormPage> {
   void _submitForm() {
     final String date = _dateController.text;
     final String address = _addressController.text;
+    final String time = _startTimeController.text;
     final String description = _descriptionController.text;
+    final String endTime = _endTimeController.text;
+    final String startTime = _startTimeController.text;
+
+    final dateTimeString = '$date $time';
+    final dateTime = DateFormat('yyyy-MM-dd h:mm a').parse(dateTimeString);
+
+    final startdateTimeString = '$date $startTime';
+    final startdateTime =
+        DateFormat('yyyy-MM-dd h:mm a').parse(startdateTimeString);
+
+    final endTimeString = '$date $endTime';
+    final endTimefin = DateFormat('yyyy-MM-dd h:mm a').parse(endTimeString);
+
+    final rate =
+        (widget._bookingController.calculateRate(startdateTime, endTimefin, 10))
+            .toStringAsFixed(2);
 
     final booking = Booking(
       BookingID: '', // Will be set by Firestore
-      BookingDate: DateTime.now(),
-      BookingStartTime: DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        _startTime!.hour,
-        _startTime!.minute,
-      ),
-      BookingEndTime: DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        _endTime!.hour,
-        _endTime!.minute,
-      ),
+      BookingDate: dateTime,
+      BookingStartTime: startdateTime,
+      BookingEndTime: endTimefin,
       BookingHomeAddress: address,
       BookingTaskDescription: description,
-      CalculatedRate: 10,
+      CalculatedRate: double.parse(rate),
       BookingStatus: 'Pending',
       OwnerID: "owner_id", // Replace with actual owner ID
     );
@@ -156,24 +156,30 @@ class _BookingFormPageState extends State<BookingFormPage> {
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: () => _selectTime(context, true),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Text(
-                                _startTime != null
-                                    ? _startTime!.format(context)
-                                    : "8:00 AM",
-                                style: const TextStyle(fontSize: 16),
-                              ),
+                          TextFormField(
+                            controller: _startTimeController,
+                            validator: (String? value) =>
+                                value != null && value.isEmpty
+                                    ? 'Please choose a time'
+                                    : null,
+                            keyboardType: TextInputType.datetime,
+                            decoration: const InputDecoration(
+                              hintText: "Select Time",
+                              border: OutlineInputBorder(),
                             ),
+                            onTap: () async {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              TimeOfDay? pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                              );
+                              if (pickedTime != null) {
+                                setState(() {
+                                  _startTimeController.text =
+                                      pickedTime.format(context);
+                                });
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -189,24 +195,30 @@ class _BookingFormPageState extends State<BookingFormPage> {
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: () => _selectTime(context, false),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Text(
-                                _endTime != null
-                                    ? _endTime!.format(context)
-                                    : "8:00 AM",
-                                style: const TextStyle(fontSize: 16),
-                              ),
+                          TextFormField(
+                            controller: _endTimeController,
+                            validator: (String? value) =>
+                                value != null && value.isEmpty
+                                    ? 'Please choose a time'
+                                    : null,
+                            keyboardType: TextInputType.datetime,
+                            decoration: const InputDecoration(
+                              hintText: "Select Time",
+                              border: OutlineInputBorder(),
                             ),
+                            onTap: () async {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              TimeOfDay? pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                              );
+                              if (pickedTime != null) {
+                                setState(() {
+                                  _endTimeController.text =
+                                      pickedTime.format(context);
+                                });
+                              }
+                            },
                           ),
                         ],
                       ),

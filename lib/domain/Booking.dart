@@ -31,8 +31,8 @@ class Booking {
       BookingID: snapshot.id,
       OwnerID: data['OwnerID'],
       BookingDate: DateTime.parse(data['BookingDate']),
-      BookingStartTime: data['BookingStartTime'],
-      BookingEndTime: data['BookingEndTime'],
+      BookingStartTime: DateTime.parse(data['BookingStartTime']),
+      BookingEndTime: DateTime.parse(data['BookingEndTime']),
       BookingHomeAddress: data['BookingHomeAddress'],
       BookingTaskDescription: data['BookingTaskDescription'],
       CalculatedRate: data['CalculatedRate'],
@@ -43,7 +43,6 @@ class Booking {
   // Convert Booking to a map for Firebase
   Map<String, dynamic> toMap() {
     return {
-      'BookingID': BookingID,
       'OwnerID': OwnerID,
       'BookingDate': BookingDate.toIso8601String(),
       'BookingStartTime': BookingStartTime,
