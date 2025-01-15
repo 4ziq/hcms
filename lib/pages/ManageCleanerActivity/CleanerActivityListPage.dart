@@ -1,92 +1,92 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'TaskDetailPage.dart'; // Adjust the path if necessary
+import 'package:hcms/domain/CleanerActivity.dart';
+import 'TaskDetailPage.dart'; // Import TaskDetailPage
 
 class CleanerActivityListPage extends StatelessWidget {
-  final List<Map<String, String>> tasks = [
-    {
-      "date": "14/09/2024",
-      "time": "1:00 PM - 3:00 PM",
-      "homestay": "TERATAK BONDA",
-      "description": "Basic cleaning such as sweeping floors, making the bed, cleaning the house...",
-      "payment": "RM 20"
-    },
-    {
-      "date": "18/09/2024",
-      "time": "1:00 PM - 3:00 PM",
-      "homestay": "TAMAN MALURI HOMESTAY",
-      "description": "Basic cleaning such as sweeping floors, making the bed, cleaning the house...",
-      "payment": "RM 20"
-    },
-  ];
+  const CleanerActivityListPage({Key? key}) : super(key: key);
+
+  Future<List<CleanerActivity>> fetchCleanerActivities() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('CleanerActivities') // Ensure this matches your collection name
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return CleanerActivity(
+        cleanerActivityID: doc.id,
+        activityPhotos: List<String>.from(data['activityPhotos'] ?? []),
+        additionalNotes: data['additionalNotes'] ?? '',
+        cleaningScheduleID: data['cleaningScheduleID'],
+        bookingID: data['bookingID'],
+        jobID: data['jobID'],
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Update Activity'),
+        title: const Text('Update Activity'),
         backgroundColor: Colors.blue,
       ),
-      body: ListView.builder(
-        padding: EdgeInsets.all(10.0),
-        itemCount: tasks.length,
-        itemBuilder: (context, index) {
-          final task = tasks[index];
-          return Card(
-            color: Colors.white, // Set the card's background color to white
-            elevation: 4.0,
-            margin: EdgeInsets.symmetric(vertical: 8.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${task["date"]}   ${task["time"]}',
-                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    task["homestay"] ?? "",
-                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    task["description"] ?? "",
-                    style: TextStyle(fontSize: 14.0),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: FutureBuilder<List<CleanerActivity>>(
+        future: fetchCleanerActivities(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Failed to load activities'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No activities available'));
+          }
+
+          final activities = snapshot.data!;
+          return ListView.builder(
+            itemCount: activities.length,
+            itemBuilder: (context, index) {
+              final activity = activities[index];
+              return Card(
+                margin: const EdgeInsets.all(10),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Payment: ${task["payment"]}',
-                        style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                        'Homestay: ${activity.bookingID}', // Placeholder for homestay name
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Task: ${activity.additionalNotes}', // Placeholder for task description
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Total Payment: RM 20', // Placeholder for payment
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 10),
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TaskDetailPage(task: task),
-                            ),
-                          );
-                        },
-                        child: Text('Update Activity'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Button background color
-                          textStyle: TextStyle(fontSize: 14.0),
-                        ),
-                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TaskDetailPage(cleanerActivityID: activity.cleanerActivityID),
+                          ),
+                        );
+                      },
+                      child: const Text('Update Activity'),
+                    ),
+
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
