@@ -1,87 +1,98 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:hcms/domain/CleanerActivity.dart';
-import 'TaskDetailPage.dart'; // Import TaskDetailPage
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'TaskDetailPage.dart';
 
-class CleanerActivityListPage extends StatelessWidget {
-  const CleanerActivityListPage({Key? key}) : super(key: key);
+class CleanerActivityListPage extends StatefulWidget {
+  @override
+  _CleanerActivityListPageState createState() =>
+      _CleanerActivityListPageState();
+}
 
-  Future<List<CleanerActivity>> fetchCleanerActivities() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('CleanerActivities') // Ensure this matches your collection name
-        .get();
-
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return CleanerActivity(
-        cleanerActivityID: doc.id,
-        activityPhotos: List<String>.from(data['activityPhotos'] ?? []),
-        additionalNotes: data['additionalNotes'] ?? '',
-        cleaningScheduleID: data['cleaningScheduleID'],
-        bookingID: data['bookingID'],
-        jobID: data['jobID'],
-      );
-    }).toList();
-  }
+class _CleanerActivityListPageState extends State<CleanerActivityListPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update Activity'),
-        backgroundColor: Colors.blue,
+        title: const Text("Update Activity"),
+        centerTitle: true,
       ),
-      body: FutureBuilder<List<CleanerActivity>>(
-        future: fetchCleanerActivities(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore
+            .collection('bookings')
+            .orderBy('BookingDate', descending: false)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Failed to load activities'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No activities available'));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No activities found'));
           }
 
-          final activities = snapshot.data!;
+          final bookings = snapshot.data!.docs;
+
           return ListView.builder(
-            itemCount: activities.length,
+            itemCount: bookings.length,
             itemBuilder: (context, index) {
-              final activity = activities[index];
+              final booking = bookings[index].data() as Map<String, dynamic>;
+              final documentId = bookings[index].id;
+              final bookingDate = DateTime.parse(booking['BookingDate']);
+
               return Card(
-                margin: const EdgeInsets.all(10),
+                margin:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Homestay: ${activity.bookingID}', // Placeholder for homestay name
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                        '${bookingDate.day}/${bookingDate.month}/${bookingDate.year} ${booking['BookingStartTime']} - ${booking['BookingEndTime']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 8.0),
                       Text(
-                        'Task: ${activity.additionalNotes}', // Placeholder for task description
-                        style: const TextStyle(fontSize: 14),
+                        booking['BookingHomeAddress'],
+                        style: const TextStyle(fontSize: 16.0),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 8.0),
                       Text(
-                        'Total Payment: RM 20', // Placeholder for payment
-                        style: const TextStyle(fontSize: 14),
+                        booking['BookingTaskDescription'],
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'Total Payment: RM ${booking['CalculatedRate']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16.0),
                       ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TaskDetailPage(cleanerActivityID: activity.cleanerActivityID),
-                          ),
-                        );
-                      },
-                      child: const Text('Update Activity'),
-                    ),
+                        onPressed: () async {
+                          final updatedDocumentId = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TaskDetailPage(
+                                documentId: documentId,
+                                bookingData: booking,
+                              ),
+                            ),
+                          );
 
+                          if (updatedDocumentId != null) {
+                            setState(() {
+                              bookings.removeWhere(
+                                  (doc) => doc.id == updatedDocumentId);
+                            });
+                          }
+                        },
+                        child: const Text('Update Activity'),
+                      ),
                     ],
                   ),
                 ),
