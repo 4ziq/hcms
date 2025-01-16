@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class EditBookingPage extends StatefulWidget {
-  final Map<String, dynamic> booking;
-  const EditBookingPage({super.key, required this.booking});
+  const EditBookingPage({super.key});
 
   @override
   State<EditBookingPage> createState() => _EditBookingPageState();
@@ -19,13 +19,11 @@ class _EditBookingPageState extends State<EditBookingPage> {
   @override
   void initState() {
     super.initState();
-    _dateController = TextEditingController(text: widget.booking['date']);
-    _startTimeController =
-        TextEditingController(text: widget.booking['startTime']);
-    _endTimeController = TextEditingController(text: widget.booking['endTime']);
-    _addressController = TextEditingController(text: widget.booking['address']);
-    _descriptionController =
-        TextEditingController(text: widget.booking['description']);
+    _dateController = TextEditingController();
+    _startTimeController = TextEditingController();
+    _endTimeController = TextEditingController();
+    _addressController = TextEditingController();
+    _descriptionController = TextEditingController();
   }
 
   @override
@@ -36,6 +34,19 @@ class _EditBookingPageState extends State<EditBookingPage> {
     _addressController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100));
+    if (picked != null) {
+      setState(() {
+        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
   }
 
   void _submitUpdate() {
@@ -58,44 +69,143 @@ class _EditBookingPageState extends State<EditBookingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text(
+                "Enter date",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _dateController,
-                decoration: const InputDecoration(labelText: 'Enter date'),
-                keyboardType: TextInputType.datetime,
+                readOnly: true,
+                onTap: () => _selectDate(context),
+                decoration: InputDecoration(
+                  hintText: "dd/mm/yyyy",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  suffixIcon: const Icon(Icons.calendar_today),
+                ),
               ),
+              const SizedBox(height: 16),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _startTimeController,
-                      decoration: const InputDecoration(labelText: 'Starts'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Starts",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _startTimeController,
+                          validator: (String? value) =>
+                              value != null && value.isEmpty
+                                  ? 'Please choose a time'
+                                  : null,
+                          keyboardType: TextInputType.datetime,
+                          decoration: const InputDecoration(
+                            hintText: "Select Time",
+                            border: OutlineInputBorder(),
+                          ),
+                          onTap: () async {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                            TimeOfDay? pickedTime = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (pickedTime != null) {
+                              setState(() {
+                                _startTimeController.text =
+                                    pickedTime.format(context);
+                              });
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16.0),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: TextField(
-                      controller: _endTimeController,
-                      decoration: const InputDecoration(labelText: 'Ends'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Ends",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _endTimeController,
+                          validator: (String? value) =>
+                              value != null && value.isEmpty
+                                  ? 'Please choose a time'
+                                  : null,
+                          keyboardType: TextInputType.datetime,
+                          decoration: const InputDecoration(
+                            hintText: "Select Time",
+                            border: OutlineInputBorder(),
+                          ),
+                          onTap: () async {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                            TimeOfDay? pickedTime = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (pickedTime != null) {
+                              setState(() {
+                                _endTimeController.text =
+                                    pickedTime.format(context);
+                              });
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              const Text(
+                "Homestay Address",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _addressController,
-                decoration:
-                    const InputDecoration(labelText: 'Homestay Address'),
+                decoration: InputDecoration(
+                  hintText: "Enter homestay address",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
+              const SizedBox(height: 16),
+              const Text(
+                "Description",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: "Enter description",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _submitUpdate,
-                  child: const Text('Submit'),
+                  onPressed: () {},
+                  child: const Text("Submit"),
                 ),
               ),
             ],

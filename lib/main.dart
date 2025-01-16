@@ -8,6 +8,10 @@ import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart'
 import 'package:hcms/pages/Report/ReportPage.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
 
+import 'package:hcms/pages/ManageBooking/BookingListPage.dart';
+import 'package:hcms/pages/ManagePayment/CompletedTaskPage.dart';
+import 'package:hcms/pages/ManageRating/RatingListPage.dart'; // Ensure RatingListPage is properly imported
+import 'package:hcms/pages/Report/ReportPage.dart';
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
 import 'pages/ReportDemo/ReportPageDemo.dart';
@@ -29,6 +33,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CleanerActivityController()),
+        Provider(create: (_) => PaymentController()), // Added PaymentController
       ],
       child: MaterialApp(
         title: 'HCMS',
@@ -41,6 +46,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
         home: DashboardScreen(),
+        routes: {
+          '/rating': (context) => RatingListPage(ownerID: 'ownerId'),
+        },
       ),
     );
   }

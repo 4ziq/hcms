@@ -236,14 +236,12 @@ class _BookingCardState extends State<BookingCard> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => EditBookingPage(
-                          //       bookingId: widget.BookingID,
-                          //     ),
-                          //   ),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditBookingPage(),
+                            ),
+                          );
                         },
                         child: const Text('Update'),
                       ),
