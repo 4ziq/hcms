@@ -163,7 +163,7 @@ class _PaymentListState extends State<PaymentList> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      BookingDetailPage(booking: booking),
+                                      BookingDetailPage(bookingId: bookingID),
                                 ),
                               );
                             },

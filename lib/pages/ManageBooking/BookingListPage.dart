@@ -31,6 +31,9 @@ class _BookingListPageState extends State<BookingListPage> {
     return Theme(
       data: _buildTheme(Brightness.light),
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Booking List'),
+        ),
         body: Column(
           children: [
             // Filters Section
