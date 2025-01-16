@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hcms/pages/ManagePayment/PaymentInfoPage.dart';
 import 'package:hcms/pages/ManageBooking/BookingDetailPage.dart';
 
 class CompletedTaskPage extends StatefulWidget {
+  final String ownerID; // Add ownerID
+
+  CompletedTaskPage({required this.ownerID}); // Constructor to pass ownerID
+
   @override
   _CompletedTaskPageState createState() => _CompletedTaskPageState();
 }
@@ -34,8 +37,10 @@ class _CompletedTaskPageState extends State<CompletedTaskPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          PaymentList(status: "Pending"), // "To Pay" tab
-          PaymentList(status: "Completed"), // "Completed" tab
+          PaymentList(
+              status: "Pending", ownerID: widget.ownerID), // Pass ownerID
+          PaymentList(
+              status: "Completed", ownerID: widget.ownerID), // Pass ownerID
         ],
       ),
     );
@@ -44,8 +49,10 @@ class _CompletedTaskPageState extends State<CompletedTaskPage>
 
 class PaymentList extends StatefulWidget {
   final String status;
+  final String ownerID; // Add ownerID
 
-  PaymentList({required this.status});
+  PaymentList(
+      {required this.status, required this.ownerID}); // Update constructor
 
   @override
   _PaymentListState createState() => _PaymentListState();
@@ -105,6 +112,7 @@ class _PaymentListState extends State<PaymentList> {
     final bookingStream = FirebaseFirestore.instance
         .collection('bookings')
         .where('BookingStatus', isEqualTo: widget.status)
+        .where('OwnerID', isEqualTo: widget.ownerID) // Add ownerID filter
         .snapshots();
 
     return StreamBuilder<QuerySnapshot>(
@@ -162,8 +170,7 @@ class _PaymentListState extends State<PaymentList> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      BookingDetailPage(booking: booking),
+                                  builder: (context) => BookingDetailPage(),
                                 ),
                               );
                             },
@@ -212,12 +219,36 @@ class _PaymentListState extends State<PaymentList> {
                     ElevatedButton(
                       onPressed: totalAmount > 0
                           ? () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      PaymentInfoPage(totalAmount: totalAmount),
-                                ),
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Checkout Confirmation'),
+                                    content: Text(
+                                        'You are about to pay RM ${totalAmount.toStringAsFixed(2)}.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content:
+                                                  Text('Payment processed!'),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text('Confirm'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
                             }
                           : null,
