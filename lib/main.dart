@@ -5,12 +5,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/firebase_options.dart';
 import 'package:hcms/pages/ManageCleanerActivity/CleanerActivityListPage.dart';
 import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
+import 'package:hcms/pages/Report/ReportPage.dart';
 import 'pages/ManageBooking/BookingListPage.dart';
 
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
-import 'pages/Report/ReportPage.dart';
-
+import 'pages/ReportDemo/ReportPageDemo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,7 +87,6 @@ class DashboardScreen extends StatelessWidget {
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-              
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -108,14 +107,12 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => CleanerActivityListPage()),
-
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -136,14 +133,12 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => CleaningScheduleListPage()),
-            
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -185,12 +180,36 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ReportPageDemo()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: const Text(
+                'Report Demo',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
                 // Placeholder for other features
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(69, 151, 246, 1),
                 padding:
-                   
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),

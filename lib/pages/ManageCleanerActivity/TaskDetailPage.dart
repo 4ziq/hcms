@@ -4,8 +4,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'dart:typed_data';
 
-///ni paling last 
-
 class TaskDetailPage extends StatefulWidget {
   final String documentId;
   final Map<String, dynamic> bookingData;
@@ -22,7 +20,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   List<Uint8List> _photos = [];
   bool _isSubmitting = false;
 
-  // Method to pick an image (Flutter Web compatible)
   Future<void> _pickImage() async {
     if (_photos.length >= 4) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,7 +36,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     }
   }
 
-  // Method to submit and update the activity
   Future<void> _submitUpdate() async {
     if (_photos.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -53,10 +49,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     });
 
     try {
-      // Generate unique cleanerActivityID
       final cleanerActivityID = 'CA${DateTime.now().millisecondsSinceEpoch}';
 
-      // Upload photos to Firebase Storage and get URLs
       List<String> photoUrls = [];
       for (int i = 0; i < _photos.length; i++) {
         final photoRef = FirebaseStorage.instance
@@ -64,21 +58,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             .child('cleanerActivities')
             .child('$cleanerActivityID/photo_$i.jpg');
 
-        try {
-          // Upload the photo and get its URL
-          await photoRef.putData(_photos[i]);
-          final photoUrl = await photoRef.getDownloadURL();
-          photoUrls.add(photoUrl);
-        } catch (e) {
-          // Catch individual photo upload errors
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to upload photo $i: $e')),
-          );
-          throw e; // Re-throw the error to stop execution
-        }
+        await photoRef.putData(_photos[i]);
+        final photoUrl = await photoRef.getDownloadURL();
+        photoUrls.add(photoUrl);
       }
 
-      // Save the data in Firestore
       await FirebaseFirestore.instance
           .collection('cleanerActivities')
           .doc(cleanerActivityID)
@@ -88,16 +72,15 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         'additionalNotes': _notesController.text,
         'cleaningScheduleID': widget.documentId,
         'bookingID': widget.bookingData['BookingID'],
-        'jobID': 'job_id_placeholder', // Replace with actual job ID if needed
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Update Successful')),
       );
 
-      Navigator.pop(context);
+      // Pass the document ID back to CleanerActivityListPage
+      Navigator.pop(context, widget.documentId);
     } catch (e) {
-      // Display any general errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update activity: $e')),
       );
@@ -115,7 +98,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         title: const Text('Update Activity'),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +106,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             Text(
               widget.bookingData['BookingHomeAddress'],
               style:
-                  const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                  const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),
             const Text(
@@ -131,37 +114,56 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: _photos
-                  .map((photo) => Stack(
-                        children: [
-                          Image.memory(
-                            photo,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                          ),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: IconButton(
-                              icon: const Icon(Icons.close, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  _photos.remove(photo);
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ))
-                  .toList(),
-            ),
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Add Photo'),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+                childAspectRatio: 1,
+              ),
+              itemCount: _photos.length + 1,
+              itemBuilder: (context, index) {
+                if (index == _photos.length) {
+                  return GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: const Icon(Icons.add_a_photo,
+                          size: 40.0, color: Colors.grey),
+                    ),
+                  );
+                }
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.memory(
+                        _photos[index],
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 4.0,
+                      right: 4.0,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _photos.removeAt(index);
+                          });
+                        },
+                        child: const Icon(Icons.close, color: Colors.red),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16.0),
             const Text(
@@ -186,7 +188,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 onPressed: _isSubmitting ? null : _submitUpdate,
                 child: _isSubmitting
                     ? const CircularProgressIndicator()
-                    : const Text('Submit'),
+                    : const Text('Submit', style: TextStyle(fontSize: 16.0)),
               ),
             ),
           ],
