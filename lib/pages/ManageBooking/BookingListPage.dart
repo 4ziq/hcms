@@ -31,6 +31,9 @@ class _BookingListPageState extends State<BookingListPage> {
     return Theme(
       data: _buildTheme(Brightness.light),
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Booking List'),
+        ),
         body: Column(
           children: [
             // Filters Section
@@ -148,7 +151,7 @@ class _BookingCardState extends State<BookingCard> {
               context,
               MaterialPageRoute(
                   builder: (context) => BookingDetailPage(
-                      // bookingId: widget.bookingId,
+                        bookingId: widget.BookingID,
                       )),
             );
           },
@@ -221,14 +224,13 @@ class _BookingCardState extends State<BookingCard> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => BookingDetailPage(
-                          //       bookingId: widget.BookingID,
-                          //     ),
-                          //   ),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BookingDetailPage(
+                                      bookingId: widget.BookingID,
+                                    )),
+                          );
                         },
                         child: const Text('View'),
                       ),
