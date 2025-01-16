@@ -3,22 +3,25 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/firebase_options.dart';
-import 'package:hcms/ManageCleanerActivity/CleanerActivityListPage.dart';
+import 'package:hcms/pages/ManageCleanerActivity/CleanerActivityListPage.dart';
 import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
+import 'package:hcms/pages/Report/ReportPage.dart';
+import 'pages/ManageBooking/BookingListPage.dart';
+
 import 'package:hcms/pages/ManageBooking/BookingListPage.dart';
 import 'package:hcms/pages/ManagePayment/CompletedTaskPage.dart';
 import 'package:hcms/pages/ManageRating/RatingListPage.dart'; // Ensure RatingListPage is properly imported
 import 'package:hcms/pages/Report/ReportPage.dart';
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
-import 'package:hcms/provider/PaymentController.dart';
+import 'pages/ReportDemo/ReportPageDemo.dart';
+import 'package:hcms/pages/Report/ReportPage.dart';
+import 'pages/ManagePayment/CompletedTaskPage.dart'; // Import CompletedTaskPage for the Payment module
+import 'package:hcms/provider/PaymentController.dart'; // Import PaymentController
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Firebase initialization
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   runApp(MyApp());
 }
 
@@ -30,7 +33,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CleanerActivityController()),
-        Provider(create: (_) => PaymentController()),
+        Provider(create: (_) => PaymentController()), // Added PaymentController
       ],
       child: MaterialApp(
         title: 'HCMS',
@@ -54,8 +57,6 @@ class MyApp extends StatelessWidget {
 class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final userID = 'ownerId'; // Set your hardcoded user ID here
-
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -83,93 +84,158 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildDashboardButton(
-                context: context,
-                label: 'Booking',
-                onPressed: () => Navigator.push(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => BookingListPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildDashboardButton(
-                context: context,
-                label: 'Cleaning Activity',
-                onPressed: () => Navigator.push(
+              child: const Text(
+                'Booking',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => CleanerActivityListPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildDashboardButton(
-                context: context,
-                label: 'Cleaner Schedule',
-                onPressed: () => Navigator.push(
+              child: const Text(
+                'Cleaning Activity',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => CleaningScheduleListPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildDashboardButton(
-                context: context,
-                label: 'Reports',
-                onPressed: () => Navigator.push(
+              child: const Text(
+                'Cleaner Schedule',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => ReportPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildDashboardButton(
-                context: context,
-                label: 'Payments',
-                onPressed: () => Navigator.push(
+              child: const Text(
+                'Reports',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => CompletedTaskPage(ownerID: userID),
-                  ),
+                  MaterialPageRoute(builder: (context) => ReportPageDemo()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildDashboardButton(
-                context: context,
-                label: 'Rate Bookings',
-                onPressed: () {
-                  Navigator.pushNamed(context, '/rating');
-                },
+              child: const Text(
+                'Report Demo',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDashboardButton({
-    required BuildContext context,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Color.fromRGBO(69, 151, 246, 1),
-        fixedSize: Size(300, 50), // Set a consistent button size
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16,
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Placeholder for other features
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(69, 151, 246, 1),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: const Text(
+                'Other Feature (Placeholder)',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
