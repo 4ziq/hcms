@@ -5,12 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/firebase_options.dart';
 import 'package:hcms/ManageCleanerActivity/CleanerActivityListPage.dart';
 import 'package:hcms/pages/ManageCleaningSchedule/CleaningScheduleListPage.dart';
-import 'pages/ManageBooking/BookingListPage.dart';
+import 'package:hcms/pages/ManageBooking/BookingListPage.dart';
+import 'package:hcms/pages/ManagePayment/CompletedTaskPage.dart';
+import 'package:hcms/pages/ManageRating/RatingListPage.dart'; // Ensure RatingListPage is properly imported
+import 'package:hcms/pages/Report/ReportPage.dart';
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
-import 'package:hcms/pages/Report/ReportPage.dart';
-import 'pages/ManagePayment/CompletedTaskPage.dart'; // Import CompletedTaskPage for the Payment module
-import 'package:hcms/provider/PaymentController.dart'; // Import PaymentController
+import 'package:hcms/provider/PaymentController.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CleanerActivityController()),
-        Provider(create: (_) => PaymentController()), // Added PaymentController
+        Provider(create: (_) => PaymentController()),
       ],
       child: MaterialApp(
         title: 'HCMS',
@@ -42,6 +43,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
         home: DashboardScreen(),
+        routes: {
+          '/rating': (context) => RatingListPage(ownerID: 'ownerId'),
+        },
       ),
     );
   }
@@ -134,9 +138,9 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 20),
               _buildDashboardButton(
                 context: context,
-                label: 'Other Feature (Placeholder)',
+                label: 'Rate Bookings',
                 onPressed: () {
-                  // Placeholder for other features
+                  Navigator.pushNamed(context, '/rating');
                 },
               ),
             ],

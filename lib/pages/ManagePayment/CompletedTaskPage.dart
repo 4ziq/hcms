@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/pages/ManageBooking/BookingDetailPage.dart';
+import 'package:hcms/pages/ManagePayment/PaymentInfoPage.dart';
 
 class CompletedTaskPage extends StatefulWidget {
-  final String ownerID; // Add ownerID
+  final String ownerID;
 
-  CompletedTaskPage({required this.ownerID}); // Constructor to pass ownerID
+  CompletedTaskPage({required this.ownerID});
 
   @override
   _CompletedTaskPageState createState() => _CompletedTaskPageState();
@@ -37,71 +38,74 @@ class _CompletedTaskPageState extends State<CompletedTaskPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          PaymentList(
-              status: "Pending", ownerID: widget.ownerID), // Pass ownerID
-          PaymentList(
-              status: "Completed", ownerID: widget.ownerID), // Pass ownerID
+          BookingList(ownerID: widget.ownerID),
+          const Center(
+            child: Text('No completed payments to display.'),
+          ),
         ],
       ),
     );
   }
 }
 
-class PaymentList extends StatefulWidget {
-  final String status;
-  final String ownerID; // Add ownerID
+class BookingList extends StatefulWidget {
+  final String ownerID;
 
-  PaymentList(
-      {required this.status, required this.ownerID}); // Update constructor
+  BookingList({required this.ownerID});
 
   @override
-  _PaymentListState createState() => _PaymentListState();
+  _BookingListState createState() => _BookingListState();
 }
 
-class _PaymentListState extends State<PaymentList> {
-  List<String> selectedBookingIDs = [];
+class _BookingListState extends State<BookingList> {
+  List<String> selectedBookings = [];
   double totalAmount = 0.0;
   bool selectAll = false;
 
-  DateTime parseDate(dynamic value) {
-    return value is Timestamp ? value.toDate() : DateTime.parse(value);
+  String formatDate(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
   }
 
-  String formatDate(DateTime dateTime) {
-    return "${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}";
+  String formatTime(DateTime time) {
+    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
   }
 
-  String formatTimeRange(DateTime start, DateTime end) {
-    return "${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')} - "
-        "${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')} "
-        "${end.hour < 12 ? 'AM' : 'PM'}";
+  DateTime parseTimestampOrString(dynamic field) {
+    if (field is Timestamp) {
+      return field.toDate();
+    } else if (field is String) {
+      return DateTime.parse(field);
+    } else {
+      throw Exception("Unsupported field format: $field");
+    }
   }
 
-  void toggleSelection(List<Map<String, dynamic>> bookings,
-      Map<String, dynamic> booking, bool isSelected) {
-    String bookingID = booking['BookingID'];
+  void toggleSelection(String bookingID, double amount, bool isSelected) {
     setState(() {
       if (isSelected) {
-        selectedBookingIDs.add(bookingID);
-        totalAmount += booking['CalculatedRate'];
+        selectedBookings.add(bookingID);
+        totalAmount += amount;
       } else {
-        selectedBookingIDs.remove(bookingID);
-        totalAmount -= booking['CalculatedRate'];
+        selectedBookings.remove(bookingID);
+        totalAmount -= amount;
       }
-      selectAll = selectedBookingIDs.length == bookings.length;
     });
   }
 
   void toggleSelectAll(List<Map<String, dynamic>> bookings) {
     setState(() {
       if (selectAll) {
-        selectedBookingIDs.clear();
+        // Unselect all
+        selectedBookings.clear();
         totalAmount = 0.0;
       } else {
-        selectedBookingIDs =
-            bookings.map((b) => b['BookingID'] as String).toList();
+        // Select all
+        selectedBookings =
+            bookings.map((booking) => booking['id'] as String).toList();
         totalAmount = bookings.fold(
-            0.0, (sum, booking) => sum + booking['CalculatedRate']);
+          0.0,
+          (sum, booking) => sum + (booking['CalculatedRate'] ?? 0.0),
+        );
       }
       selectAll = !selectAll;
     });
@@ -111,24 +115,25 @@ class _PaymentListState extends State<PaymentList> {
   Widget build(BuildContext context) {
     final bookingStream = FirebaseFirestore.instance
         .collection('bookings')
-        .where('BookingStatus', isEqualTo: widget.status)
-        .where('OwnerID', isEqualTo: widget.ownerID) // Add ownerID filter
+        .where('OwnerID', isEqualTo: widget.ownerID)
         .snapshots();
 
     return StreamBuilder<QuerySnapshot>(
       stream: bookingStream,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final bookings = snapshot.data!.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
-
-        if (bookings.isEmpty) {
-          return const Center(child: Text('No Bookings Found'));
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No bookings found.'));
         }
+
+        final bookings = snapshot.data!.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          return data;
+        }).toList();
 
         return Column(
           children: [
@@ -137,20 +142,22 @@ class _PaymentListState extends State<PaymentList> {
                 itemCount: bookings.length,
                 itemBuilder: (context, index) {
                   final booking = bookings[index];
-                  String bookingID = booking['BookingID'];
-
-                  DateTime bookingDate = parseDate(booking['BookingDate']);
-                  DateTime bookingStartTime =
-                      parseDate(booking['BookingStartTime']);
-                  DateTime bookingEndTime =
-                      parseDate(booking['BookingEndTime']);
+                  final bookingID = booking['id'] as String;
+                  final bookingDate = DateTime.parse(booking['BookingDate']);
+                  final bookingStartTime =
+                      parseTimestampOrString(booking['BookingStartTime']);
+                  final bookingEndTime =
+                      parseTimestampOrString(booking['BookingEndTime']);
+                  final bookingAmount = booking['CalculatedRate'] != null
+                      ? booking['CalculatedRate'] as double
+                      : 0.0;
 
                   return Card(
                     margin: const EdgeInsets.symmetric(
                         vertical: 8.0, horizontal: 16.0),
                     child: ListTile(
                       title: Text(
-                        '${formatDate(bookingDate)} - ${formatTimeRange(bookingStartTime, bookingEndTime)}',
+                        '${formatDate(bookingDate)} - ${formatTime(bookingStartTime)} to ${formatTime(bookingEndTime)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Column(
@@ -159,7 +166,8 @@ class _PaymentListState extends State<PaymentList> {
                           Text(booking['BookingTaskDescription'] ??
                               'No Description'),
                           Text(
-                              'Amount: RM ${booking['CalculatedRate'].toStringAsFixed(2)}'),
+                            'Amount: RM ${bookingAmount.toStringAsFixed(2)}',
+                          ),
                         ],
                       ),
                       trailing: Row(
@@ -170,8 +178,9 @@ class _PaymentListState extends State<PaymentList> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      BookingDetailPage(bookingId: bookingID),
+                                  builder: (context) => BookingDetailPage(
+                                    bookingId: bookingID,
+                                  ),
                                 ),
                               );
                             },
@@ -183,14 +192,16 @@ class _PaymentListState extends State<PaymentList> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text('View',
-                                style: TextStyle(color: Colors.white)),
+                            child: const Text(
+                              'View',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                           Checkbox(
-                            value: selectedBookingIDs.contains(bookingID),
+                            value: selectedBookings.contains(bookingID),
                             onChanged: (bool? value) {
                               toggleSelection(
-                                  bookings, booking, value ?? false);
+                                  bookingID, bookingAmount, value ?? false);
                             },
                           ),
                         ],
@@ -200,79 +211,47 @@ class _PaymentListState extends State<PaymentList> {
                 },
               ),
             ),
-            if (widget.status == "Pending")
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: selectAll,
-                          onChanged: (value) => toggleSelectAll(bookings),
-                        ),
-                        const Text('Select All'),
-                        const SizedBox(width: 16),
-                        Text('Total: RM ${totalAmount.toStringAsFixed(2)}'),
-                      ],
-                    ),
-                    ElevatedButton(
-                      onPressed: totalAmount > 0
-                          ? () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Checkout Confirmation'),
-                                    content: Text(
-                                        'You are about to pay RM ${totalAmount.toStringAsFixed(2)}.'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content:
-                                                  Text('Payment processed!'),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text('Confirm'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Cancel'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            totalAmount > 0 ? Colors.green : Colors.grey,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: selectAll,
+                        onChanged: (bool? value) {
+                          toggleSelectAll(bookings);
+                        },
                       ),
-                      child: const Text(
-                        'Checkout',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
+                      const Text('Select All'),
+                    ],
+                  ),
+                  Text('Total: RM ${totalAmount.toStringAsFixed(2)}'),
+                  ElevatedButton(
+                    onPressed: totalAmount > 0
+                        ? () {
+                            final selectedBookingsDetails = bookings
+                                .where((booking) =>
+                                    selectedBookings.contains(booking['id']))
+                                .toList();
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PaymentInfoPage(
+                                  selectedBookings: selectedBookingsDetails,
+                                  totalAmount: totalAmount,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Text('Checkout'),
+                  ),
+                ],
               ),
+            ),
           ],
         );
       },
