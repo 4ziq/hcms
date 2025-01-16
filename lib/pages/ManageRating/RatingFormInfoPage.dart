@@ -1,86 +1,137 @@
 import 'package:flutter/material.dart';
-import 'package:hcms/domain/Rating.dart';
-import 'package:hcms/provider/RatingController.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RatingFormInfoPage extends StatefulWidget {
   final String bookingId;
+  final Map<String, dynamic> bookingData;
 
-  RatingFormInfoPage({required this.bookingId});
+  RatingFormInfoPage({required this.bookingId, required this.bookingData});
 
   @override
   _RatingFormInfoPageState createState() => _RatingFormInfoPageState();
 }
 
 class _RatingFormInfoPageState extends State<RatingFormInfoPage> {
-  final _ratingController = TextEditingController();
-  final _reviewController = TextEditingController();
-  double rating = 0.0;
+  int rating = 0; // Star rating (1-5)
+  final TextEditingController reviewController = TextEditingController();
+  bool isSubmitting = false;
 
-  @override
-  void dispose() {
-    _ratingController.dispose();
-    _reviewController.dispose();
-    super.dispose();
-  }
+  void submitRating() async {
+    if (rating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide a rating.')),
+      );
+      return;
+    }
 
-  void _submitRating() {
-    final ratingData = Rating(
-      bookingId: widget.bookingId,
-      rating: rating,
-      review: _reviewController.text,
-      photoUrl: null, // Add photo upload logic here
-      videoUrl: null, // Add video upload logic here
-    );
+    setState(() {
+      isSubmitting = true;
+    });
 
-    RatingController().createRating(ratingData);
+    try {
+      await FirebaseFirestore.instance.collection('ratings').add({
+        'bookingId': widget.bookingId,
+        'rating': rating,
+        'review': reviewController.text,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Rating submitted successfully!")),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rating submitted successfully!')),
+      );
 
-    Navigator.pop(context);
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error submitting rating: $e')),
+      );
+    } finally {
+      setState(() {
+        isSubmitting = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final booking = widget.bookingData;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Rate Booking")),
+      appBar: AppBar(
+        title: const Text('Rate Booking'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text("Rate your experience:"),
-            const SizedBox(height: 16.0),
-            Row(
-              children: List.generate(5, (index) {
-                return IconButton(
-                  icon: Icon(
-                    index < rating ? Icons.star : Icons.star_border,
-                    color: Colors.yellow,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      rating = index + 1.0;
-                    });
-                  },
-                );
-              }),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _reviewController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: "Write your review here...",
-                border: OutlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Date: ${booking['BookingDate']}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: _submitRating,
-              child: const Text("Submit"),
-            ),
-          ],
+              Text(
+                'Address: ${booking['BookingHomeAddress'] ?? "No Address"}',
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Rating:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    onPressed: () {
+                      setState(() {
+                        rating = index + 1;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.star,
+                      color: index < rating ? Colors.yellow : Colors.grey,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Review:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: reviewController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Write your review here...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: isSubmitting ? null : submitRating,
+                    child: isSubmitting
+                        ? const CircularProgressIndicator()
+                        : const Text('Submit'),
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () {
+                            Navigator.pop(context);
+                          },
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

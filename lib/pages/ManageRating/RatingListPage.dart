@@ -24,6 +24,9 @@ class RatingListPage extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('No bookings to rate.'));
           }
@@ -38,15 +41,19 @@ class RatingListPage extends StatelessWidget {
             itemCount: bookings.length,
             itemBuilder: (context, index) {
               final booking = bookings[index];
+              final bookingDate = booking['BookingDate'] is Timestamp
+                  ? (booking['BookingDate'] as Timestamp).toDate()
+                  : DateTime.parse(booking['BookingDate']);
+
               return Card(
                 margin: const EdgeInsets.all(8.0),
                 child: ListTile(
                   title: Text(
-                    'Date: ${booking['BookingDate']}',
+                    'Date: ${bookingDate.day}/${bookingDate.month}/${bookingDate.year}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    'Address: ${booking['BookingHomeAddress']}',
+                    'Address: ${booking['BookingHomeAddress'] ?? "No Address"}',
                   ),
                   trailing: ElevatedButton(
                     onPressed: () {
@@ -55,6 +62,7 @@ class RatingListPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => RatingFormInfoPage(
                             bookingId: booking['id'],
+                            bookingData: booking,
                           ),
                         ),
                       );
