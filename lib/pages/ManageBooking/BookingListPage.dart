@@ -1,58 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcms/domain/Booking.dart';
+import 'package:hcms/provider/BookingController.dart';
 import 'BookingDetailPage.dart';
 import 'BookingFormPage.dart';
 import 'EditBookingPage.dart';
 
 class BookingListPage extends StatefulWidget {
-  const BookingListPage({super.key});
+  BookingListPage({super.key});
 
   @override
   State<BookingListPage> createState() => _BookingListPageState();
+
+  final _bookingController = BookingController();
 }
 
 class _BookingListPageState extends State<BookingListPage> {
-  List<Map<String, dynamic>> bookings =
-      []; // Initially empty list for testing "No Booking Found"
-
-  void _deleteBooking(int index) {
-    setState(() {
-      bookings.removeAt(index);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Booking deleted successfully!')),
-    );
-  }
-
-  void showDeleteConfirmationDialog(
-      BuildContext context, VoidCallback onConfirm) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Booking?'),
-          content: const Text('Are you sure you want to delete this booking?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                onConfirm(); // Perform the delete action
-              },
-              child:
-                  const Text('Confirm', style: TextStyle(color: Colors.blue)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   ThemeData _buildTheme(brightness) {
     var baseTheme = ThemeData(brightness: brightness);
 
@@ -68,120 +32,48 @@ class _BookingListPageState extends State<BookingListPage> {
       data: _buildTheme(Brightness.light),
       child: Scaffold(
         appBar: AppBar(
-          // title: const Text(
-          //   "HCMS",
-          //   style: TextStyle(
-          //     fontSize: 18,
-          //     color: Colors.black,
-          //     fontWeight: FontWeight.bold,
-          //   ),
-          // ),
-          title: Center(
-            child: Row(
-              children: [
-                Spacer(),
-                Text(
-                  "Booking List",
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-                Spacer(),
-                Text(
-                  "HCMS",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          title: const Text('Booking List'),
         ),
-        body: bookings.isEmpty
-            ? const Center(
-                child: Text(
-                  'No Booking Found',
-                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                ),
-              )
-            : ListView.builder(
-                itemCount: bookings.length,
-                itemBuilder: (context, index) {
-                  final booking = bookings[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 16.0),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${booking['date']} ${booking['startTime']} - ${booking['endTime']}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            booking['description'],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 16.0),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Handle View action
-                                  // Pass booking details to detail screen
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          BookingDetailPage(booking: booking),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue),
-                                child: const Text('View'),
-                              ),
-                              const SizedBox(width: 8.0),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Handle Update action
-                                  // Navigate to AddBookingScreen for editing
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          EditBookingPage(booking: booking),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green),
-                                child: const Text('Update'),
-                              ),
-                              const SizedBox(width: 8.0),
-                              IconButton(
-                                onPressed: () {
-                                  // Show confirmation dialog before deleting
-                                  showDeleteConfirmationDialog(
-                                      context, () => _deleteBooking(index));
-                                },
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+        body: Column(
+          children: [
+            // Filters Section
+            // Booking List Section
+            Expanded(
+              child: StreamBuilder<List<Booking>>(
+                stream:
+                    widget._bookingController.getBookingsByOwnerId('ownerId'),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    print(snapshot);
+                    return const Center(
+                        child: Text('You have not made any bookings.'));
+                  }
+                  final bookings = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: bookings.length,
+                    itemBuilder: (context, index) {
+                      final booking = bookings[index];
+                      return BookingCard(
+                        BookingID: booking.BookingID,
+                        BookingDate: booking.BookingDate.toString(),
+                        BookingStartTime: booking.BookingStartTime.toString(),
+                        BookingEndTime: booking.BookingEndTime.toString(),
+                        BookingHomeAddress: booking.BookingHomeAddress,
+                        BookingTaskDescription: booking.BookingTaskDescription,
+                        CalculatedRate: booking.CalculatedRate,
+                        BookingStatus: booking.BookingStatus,
+                        OwnerID: booking.OwnerID,
+                      );
+                    },
                   );
                 },
               ),
+            ),
+          ],
+        ),
         floatingActionButton: Container(
           width: 375, // Desired width
           height: 50, // Optional: Desired height
@@ -209,6 +101,168 @@ class _BookingListPageState extends State<BookingListPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class BookingCard extends StatefulWidget {
+  final String BookingID;
+  final String BookingDate;
+  final String BookingStartTime;
+  final String BookingEndTime;
+  final String BookingHomeAddress;
+  final String BookingTaskDescription;
+  final double CalculatedRate;
+  final String BookingStatus;
+  final String OwnerID;
+
+  BookingCard({
+    super.key,
+    required this.BookingID,
+    required this.BookingDate,
+    required this.BookingStartTime,
+    required this.BookingEndTime,
+    required this.BookingHomeAddress,
+    required this.BookingTaskDescription,
+    required this.CalculatedRate,
+    required this.BookingStatus,
+    required this.OwnerID,
+  });
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _BookingCardState createState() => _BookingCardState();
+  final _bookingController = BookingController();
+}
+
+class _BookingCardState extends State<BookingCard> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => BookingDetailPage(
+                        bookingId: widget.BookingID,
+                      )),
+            );
+          },
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${widget.BookingDate.split(' ')[0].split('-')[2]}/${widget.BookingDate.split(' ')[0].split('-')[1]}/${widget.BookingDate.split(' ')[0].split('-')[0]}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${widget.BookingStartTime.split(' ')[1].split(':')[0]}:${widget.BookingStartTime.split(' ')[1].split(':')[1]} - ${widget.BookingEndTime.split(' ')[1].split(':')[0]}:${widget.BookingEndTime.split(' ')[1].split(':')[1]}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          widget.BookingTaskDescription,
+                          style: TextStyle(color: Colors.grey[700]),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      Text(
+                        'RM ${widget.CalculatedRate.toStringAsFixed(2)}',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.BookingStatus,
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BookingDetailPage(
+                                      bookingId: widget.BookingID,
+                                    )),
+                          );
+                        },
+                        child: const Text('View'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => EditBookingPage(
+                          //       bookingId: widget.BookingID,
+                          //     ),
+                          //   ),
+                          // );
+                        },
+                        child: const Text('Update'),
+                      ),
+                      if (widget.BookingStatus == 'Pending')
+                        TextButton(
+                          onPressed: () async {
+                            widget._bookingController
+                                .cancelBooking(widget.BookingID);
+                          },
+                          child: const Text('Cancel Booking'),
+                        ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

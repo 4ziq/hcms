@@ -11,6 +11,9 @@ import 'pages/ManageBooking/BookingListPage.dart';
 import 'package:provider/provider.dart';
 import 'package:hcms/provider/CleanerActivityController.dart';
 import 'pages/ReportDemo/ReportPageDemo.dart';
+import 'package:hcms/pages/Report/ReportPage.dart';
+import 'pages/ManagePayment/CompletedTaskPage.dart'; // Import CompletedTaskPage for the Payment module
+import 'package:hcms/provider/PaymentController.dart'; // Import PaymentController
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
