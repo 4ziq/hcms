@@ -170,7 +170,8 @@ class _PaymentListState extends State<PaymentList> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BookingDetailPage(),
+                                  builder: (context) =>
+                                      BookingDetailPage(bookingId: bookingID),
                                 ),
                               );
                             },
