@@ -33,7 +33,7 @@ class BookingController {
       await _firestore
           .collection('bookings')
           .doc(bookingId)
-          .update({'booking_status': 'Cancelled'});
+          .update({'BookingStatus': 'Cancelled'});
     } catch (e) {
       throw Exception('Failed to cancel booking: $e');
     }
@@ -42,8 +42,8 @@ class BookingController {
   // Get booking stream by owner ID
   Stream<List<Booking>> getBookingsByOwnerId(String? ownerId) {
     return _firestore
-        .collection('booking')
-        .where('owner_id', isEqualTo: ownerId)
+        .collection('bookings')
+        .where('OwnerID', isEqualTo: ownerId)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Booking.fromSnapshot(doc)).toList());
@@ -66,5 +66,15 @@ class BookingController {
         .where('booking_id',
             isEqualTo: _firestore.collection('bookings').doc(bookingId))
         .snapshots();
+  }
+
+  double calculateRate(
+      DateTime startTime, DateTime endTime, double ratePerHour) {
+    // Calculate the difference in hours
+    final duration = endTime.difference(startTime);
+    final hours = duration.inMinutes / 60.0;
+
+    // Calculate the total cost
+    return hours * ratePerHour;
   }
 }

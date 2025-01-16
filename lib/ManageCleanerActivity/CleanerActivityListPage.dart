@@ -1,92 +1,103 @@
 import 'package:flutter/material.dart';
-import 'TaskDetailPage.dart'; // Adjust the path if necessary
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'TaskDetailPage.dart';
 
-class CleanerActivityListPage extends StatelessWidget {
-  final List<Map<String, String>> tasks = [
-    {
-      "date": "14/09/2024",
-      "time": "1:00 PM - 3:00 PM",
-      "homestay": "TERATAK BONDA",
-      "description": "Basic cleaning such as sweeping floors, making the bed, cleaning the house...",
-      "payment": "RM 20"
-    },
-    {
-      "date": "18/09/2024",
-      "time": "1:00 PM - 3:00 PM",
-      "homestay": "TAMAN MALURI HOMESTAY",
-      "description": "Basic cleaning such as sweeping floors, making the bed, cleaning the house...",
-      "payment": "RM 20"
-    },
-  ];
+class CleanerActivityListPage extends StatefulWidget {
+  @override
+  _CleanerActivityListPageState createState() =>
+      _CleanerActivityListPageState();
+}
+
+class _CleanerActivityListPageState extends State<CleanerActivityListPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Update Activity'),
-        backgroundColor: Colors.blue,
+        title: const Text("Update Activity"),
+        centerTitle: true,
       ),
-      body: ListView.builder(
-        padding: EdgeInsets.all(10.0),
-        itemCount: tasks.length,
-        itemBuilder: (context, index) {
-          final task = tasks[index];
-          return Card(
-            color: Colors.white, // Set the card's background color to white
-            elevation: 4.0,
-            margin: EdgeInsets.symmetric(vertical: 8.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${task["date"]}   ${task["time"]}',
-                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    task["homestay"] ?? "",
-                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    task["description"] ?? "",
-                    style: TextStyle(fontSize: 14.0),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore
+            .collection('bookings')
+            .orderBy('BookingDate', descending: false)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No activities found'));
+          }
+
+          final bookings = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: bookings.length,
+            itemBuilder: (context, index) {
+              final booking = bookings[index].data() as Map<String, dynamic>;
+              final documentId = bookings[index].id;
+              final bookingDate = DateTime.parse(booking['BookingDate']);
+
+              return Card(
+                margin:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Payment: ${task["payment"]}',
-                        style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                        '${bookingDate.day}/${bookingDate.month}/${bookingDate.year} ${booking['BookingStartTime']} - ${booking['BookingEndTime']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        booking['BookingHomeAddress'],
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        booking['BookingTaskDescription'],
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'Total Payment: RM ${booking['CalculatedRate']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16.0),
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final updatedDocumentId = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TaskDetailPage(task: task),
+                              builder: (context) => TaskDetailPage(
+                                documentId: documentId,
+                                bookingData: booking,
+                              ),
                             ),
                           );
+
+                          if (updatedDocumentId != null) {
+                            setState(() {
+                              bookings.removeWhere(
+                                  (doc) => doc.id == updatedDocumentId);
+                            });
+                          }
                         },
-                        child: Text('Update Activity'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Button background color
-                          textStyle: TextStyle(fontSize: 14.0),
-                        ),
+                        child: const Text('Update Activity'),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
